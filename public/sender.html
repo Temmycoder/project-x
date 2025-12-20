@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-share</title>
+    <link rel="stylesheet" href="styles/main.css">
+  </head>
+  <body>
+    <h1>Sender</h1>
+    <p><button id="shareBtn">Share screen</button></p >
+    <video id="preview" autoplay></video>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      let pc = new RTCPeerConnection();
+      pc.onicecandidate = e => {
+        if(e.candidate) socket.emit("ice", e.candidate);
+      };
+
+      socket.on("answer", async answer => {
+        await pc.setRemoteDescription(answer);
+      })
+
+      socket.on("ice", candidate => pc.addIceCandidate(candidate));
+
+      document.getElementById("shareBtn").onclick = async() => {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false
+        });
+
+        document.getElementById("preview").srcObject = stream;
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        socket.emit("offer", offer);
+      };
+
+      // socket.emit("join", "sender");
+    </script>
+  </body>
+</html>

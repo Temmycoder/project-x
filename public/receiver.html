@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-share</title>
+  </head>
+  <body>
+    <h1>Receiver</h1>
+    <video id="viewer" width="100%" autoplay></video>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      let pc = new RTCPeerConnection();
+      pc.ontrack = e => {
+        document.getElementById("viewer").srcObject = e.streams[0];
+      };
+
+      pc.onicecandidate = e => {
+        console.log('iced');
+        if(e.candidate) socket.emit("ice", e.candidate);
+      };
+
+      socket.on("offer", async offer => {
+        await pc.setRemoteDescription(offer);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit("answer", answer);
+      });
+
+      socket.on("ice", candidate => pc.addIceCandidate(candidate));
+    </script>
+  </body>
+</html>
