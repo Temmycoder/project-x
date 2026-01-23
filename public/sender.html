@@ -5,54 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sender</title>
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="css/style.css" id="main-style-link" >
+    <link rel="stylesheet" href="css/style-preset.css" >
+    <link rel="stylesheet" href="css/all.css" >
   </head>
-  <body>
-    <h1>Screen Share</h1>
-    <h2>Sender</h2>
-    <p><button id="share">Share Screen</button></p>
-    <video id="preview" autoplay muted></video>
-
+  <body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+    <nav class="pc-sidebar">
+      <div class="navbar-wrapper">
+        <div class="m-header">
+          <h3 class="b-brand pt-2">X-Share</h3>
+        </div>
+        <div class="navbar-content">
+          <ul class="pc-navbar">
+            <li class="pc-item">
+              <p class="p-3">
+                <span class="pc-mtext f-18">Start sharing<button id="share" class="btn btn-action">▶</button></span>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <header class="pc-header">
+      <div class="header-wrapper">
+        <div class="me-auto pc-mob-drp">
+          <ul class="list-unstyled">
+            <li class="pc-h-item pc-sidebar-collapse">
+              <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+                <i class="fa fa-bars"></i>
+              </a>
+            </li>
+            <li class="pc-h-item pc-sidebar-popup">
+              <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+                <i class="fa fa-bars"></i>
+              </a>
+            </li>
+            <li class="pc-h-item">
+              <a class="f-22 ms-5" id="">
+                Screen Share | Sender
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <div class="pc-container">
+      <div class="pc-content">
+        <video id="preview" class="bg-gray-100" autoplay muted></video>
+      </div>
+    </div>
+  
     <script src="/socket.io/socket.io.js"></script>
     <script>
-    const socket = io();
-    socket.emit("join", "sender");
+      const socket = io();
+      socket.emit("join", "sender");
 
-    let pc;
-    let stream;
+      let pc;
+      let stream;
 
-    function createPeer() {
-      pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-      });
+      function createPeer() {
+        pc = new RTCPeerConnection({
+          iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+        });
 
-      pc.onicecandidate = e => {
-        if (e.candidate) socket.emit("ice", e.candidate);
+        pc.onicecandidate = e => {
+          if (e.candidate) socket.emit("ice", e.candidate);
+        };
+
+        socket.on("ice", c => pc.addIceCandidate(c));
+        socket.on("answer", a => pc.setRemoteDescription(a));
+      }
+
+      async function makeOffer() {
+        pc?.close();
+        createPeer();
+
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.emit("offer", offer);
+      }
+
+      document.getElementById("share").onclick = async () => {
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        preview.srcObject = stream;
+        makeOffer();
       };
 
-      socket.on("ice", c => pc.addIceCandidate(c));
-      socket.on("answer", a => pc.setRemoteDescription(a));
-    }
-
-    async function makeOffer() {
-      pc?.close();
-      createPeer();
-
-      stream.getTracks().forEach(t => pc.addTrack(t, stream));
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit("offer", offer);
-    }
-
-    document.getElementById("share").onclick = async () => {
-      stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      preview.srcObject = stream;
-      makeOffer();
-    };
-
-    socket.on("receiver-ready", () => {
-      if (stream) makeOffer();
-    });
+      socket.on("receiver-ready", () => {
+        if (stream) makeOffer();
+      });
     </script>
+    <script src="js/simplebar.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/pcoded.js"></script>
+    <script src="js/feather.min.js"></script>
+    <script src="js/all.js"></script>
   </body>
 </html>
