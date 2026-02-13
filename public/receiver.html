@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receiver</title>
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="css/style.css" id="main-style-link" >
+    <link rel="stylesheet" href="css/style.css" id="main-style-link">
     <link rel="stylesheet" href="css/style-preset.css" >
     <link rel="stylesheet" href="css/all.css" >
-    <link rel="stylesheet" href="css/bootstrap.min.css" >
   </head>
   <body>
     <nav class="pc-sidebar">
@@ -42,9 +41,9 @@
               </a>
             </li>
             <li class="pc-h-item">
-              <a class="f-22 ms-5" id="">
+              <span class="f-22 ms-5">
                 Screen Share | Receiver
-              </a>
+            </span>
             </li>
           </ul>
         </div>
@@ -52,7 +51,11 @@
     </header>
     <div class="pc-container">
       <div class="pc-content">
-        <video id="viewer" class="bg-white" autoplay muted playsinline></video>
+        <video id="viewer" autoplay muted playsinline></video>
+        <div style="margin-top:10px;">
+          <button id="enable-output" class="btn btn-action">Enable Output</button>
+        </div>
+        <canvas id="captureCanvas" style="display:none"></canvas>
       </div>
     </div>
 
@@ -83,6 +86,57 @@
       }
 
       createPeer();
+
+      // --- Frame capture & emit to server (for external output/NDI bridge) ---
+      const viewerEl = document.getElementById('viewer');
+      const canvas = document.getElementById('captureCanvas');
+      const ctx = canvas.getContext('2d');
+      const btn = document.getElementById('enable-output');
+      let outputEnabled = false;
+      let captureInterval = null;
+      let sending = false;
+      const CAPTURE_FPS = 10;
+      const CAPTURE_INTERVAL = 1000 / CAPTURE_FPS;
+      const JPEG_QUALITY = 0.7;
+
+      btn.addEventListener('click', () => {
+        outputEnabled = !outputEnabled;
+        btn.textContent = outputEnabled ? 'Disable Output' : 'Enable Output';
+        if (outputEnabled) startCapture();
+        else stopCapture();
+      });
+
+      viewerEl.addEventListener('play', () => {
+        // ensure canvas matches video size when playing
+        canvas.width = viewerEl.videoWidth || viewerEl.clientWidth;
+        canvas.height = viewerEl.videoHeight || viewerEl.clientHeight;
+      });
+
+      function startCapture() {
+        if (captureInterval) return;
+        captureInterval = setInterval(captureAndSend, CAPTURE_INTERVAL);
+      }
+      function stopCapture() {
+        if (!captureInterval) return;
+        clearInterval(captureInterval);
+        captureInterval = null;
+      }
+      function captureAndSend() {
+        if (!outputEnabled || sending) return;
+        if (viewerEl.readyState < 2) return; // HAVE_CURRENT_DATA
+        sending = true;
+        try {
+          ctx.drawImage(viewerEl, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            if (blob) socket.emit('frame', blob);
+            sending = false;
+          }, 'image/jpeg', JPEG_QUALITY);
+        } catch (err) {
+          console.error('capture error', err);
+          sending = false;
+        }
+      }
+      // --- end frame capture ---
 
       socket.on("offer", async offer => {
         pc?.close();

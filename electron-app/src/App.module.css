@@ -1,0 +1,183 @@
+/**
+ * App Main Styles
+ */
+
+.appContainer {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+}
+
+.appHeader {
+  padding: 15px 25px;
+  background: rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: white;
+}
+
+.serverStatus {
+  font-weight: 600;
+  color: white;
+}
+
+.serverStatus.online {
+  color: #4ade80;
+}
+
+.serverStatus.offline {
+  color: #ef4444;
+}
+
+.appContent {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+}
+
+/* Mode Selection Screen */
+.modeSelectScreen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+}
+
+.modeContent {
+  text-align: center;
+  color: white;
+}
+
+.modeContent h1 {
+  font-size: 3.5em;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+  font-size: 1.2em;
+  margin-bottom: 50px;
+  opacity: 0.9;
+}
+
+.modeButtons {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+
+.modeButton {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 15px;
+  padding: 30px 40px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  min-width: 280px;
+}
+
+.modeButton:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modeButton.sender {
+  border: 3px solid #667eea;
+}
+
+.modeButton.receiver {
+  border: 3px solid #764ba2;
+}
+
+.modeButton .icon {
+  font-size: 3em;
+  margin-bottom: 15px;
+}
+
+.modeButton h2 {
+  color: #333;
+  margin: 15px 0 10px;
+  font-size: 1.3em;
+}
+
+.modeButton p {
+  color: #666;
+  margin: 0;
+}
+
+.version {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Loading Screen */
+.loadingScreen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loadingContent {
+  text-align: center;
+  color: white;
+}
+
+.loadingContent h1 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+}
+
+.connecting {
+  font-size: 1.1em;
+  margin-bottom: 30px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 30px auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hint {
+  margin-top: 30px;
+  font-size: 0.9em;
+  opacity: 0.8;
+}
